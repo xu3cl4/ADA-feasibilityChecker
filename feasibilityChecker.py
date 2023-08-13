@@ -1,18 +1,17 @@
 # import from built-in modules 
 from argparse  import ArgumentParser, RawTextHelpFormatter as RT
 from itertools import combinations as comb
-from math      import inf
 from pathlib   import Path
 from re        import search
 
 import matplotlib.pyplot as plt
-import numpy             as np
 import pandas            as pd
 
 # import from personal modules 
-from utils.extract import listNlines
-from utils.others  import checkFeasibility, getIndices, getSuccessRate
+from utils.extract import listNlines, getBounds
+from utils.others  import addScatterPlot, checkFeasibility, getIndices, getSuccessRate, indexFormatter
 
+# constants 
 FPATH = Path(__file__)
 DIR = FPATH.parent
 
@@ -43,9 +42,12 @@ def getArguments():
     parser.add_argument('ipt_sim',  type = str, help="the directory including the .out files from AMANZI")
     parser.add_argument('ipt_para', type = str, help="the path to the file storing the parameters that AMANZI uses")
     parser.add_argument('opt',      type = str, help="the directory to store the 'feasibility' plot")
-    parser.add_argument('--paras',  type = str, help='''the list of parameters of interest, including\nperm, poro, alpha, m, sr, rech, dump, ph, tritium, al, uran\n\n''',          
+    parser.add_argument('--paras',  type = str, help='''the list of parameters of interest, including\nperm, poro, alpha, m, sr, rech, dump, ph, tritium, al, uran''',          
             nargs='*', default=["perm", "rech", "dump"])
-    parser.add_argument('--svar',   type = str, help="the parameter to be stratified over", default="poro")
+    parser.add_argument('--svar',   type = str, help="the parameter to be stratified over", default="")
+    parser.add_argument('--ipt_rg', type = str, help="the path to the file storing the range of the parameter to be stratified over")
+    parser.add_argument('--n_row',  type = int, help="number of plots per row", default=1000)
+    parser.add_argument('--n_stra', type = int, help="number of equal intervals that the stratified parameter would be divide into\n\n", default=3)
 
     return parser.parse_args()
 
@@ -55,11 +57,15 @@ def main():
 
     ipt_sim  = DIR.joinpath(args.ipt_sim)
     ipt_para = DIR.joinpath(args.ipt_para)
-    fname_out= f"{ipt_para.stem}_feasibility.pdf"
-    opt      = DIR.joinpath(args.opt).joinpath(fname_out)
     paras    = [string2paras[para] for para in args.paras]
-    svar     = string2paras[args.svar]
+    svar     = string2paras[args.svar] if len(args.svar) > 0 else None 
+    N_STRA   = args.n_stra
     
+    stratified = False if svar is None else True
+    ipt_rg   = DIR.joinpath(args.ipt_rg) if stratified else None
+    fname_out= f"{ipt_para.stem}_feasibility.pdf" if not stratified else f"{ipt_para.stem}_feasibility_stratify{args.svar}_{N_STRA}.pdf"
+    opt      = DIR.joinpath(args.opt).joinpath(fname_out)
+
     # get the indices for feasible/infeasible sets of parameters
     res = {
             "feasible": [],
@@ -85,40 +91,65 @@ def main():
     print(f"simulation success rate: {success_rate} %")
     
 
+    # read the parameters used in simulations 
+    para_samples = pd.read_csv(ipt_para)
+
     # plotting  
     pairs = list(comb(paras, 2))
-    nrow, ncol = len(pairs)//3, 3
-    if len(pairs) % 3 != 0: nrow += 1
-    fig, axs = plt.subplots(nrow, ncol,figsize=(10, 3.5*nrow))
+    N_PLOTS_PER_ROW = min(len(pairs), args.n_row)
+
+    nrow, ncol = len(pairs)//N_PLOTS_PER_ROW, N_PLOTS_PER_ROW
+    if len(pairs) % N_PLOTS_PER_ROW != 0: nrow += 1
+    idx_f = 1
+
+    # create more rows for stratifying 
+    if stratified:
+        idx_f = N_STRA
+        nrow *= N_STRA
+
+    fig, axs = plt.subplots(nrow, ncol, figsize=(3.3*ncol + 1, 3.3*nrow))
    
-    paras_samples = pd.read_csv(ipt_para)
     for i, pair in enumerate(pairs):
-        r, c = getIndices(i, ncol)
-        idx = c if len(pairs) == 3 else (r, c)
+        r, c = getIndices(i, ncol, idx_f)
+        legend = True if r + c == 0 else False
+
         par1, par2 = pair
-        axs[idx].scatter(paras_samples.loc[res['feasible'], [par1]], paras_samples.loc[res['feasible'], [par2]], color='green', label="success", zorder=1, s=1)
-        axs[idx].scatter(paras_samples.loc[res['infeasible'], [par1]], paras_samples.loc[res['infeasible'], [par2]], color='red', label="failures", zorder=2, s=1)
-
         unit1, unit2 = units[par1], units[par2]
-        axs[idx].set_xlabel(f"{paras2string[par1]}{' (' + unit1 + ')' if len(unit1) > 0 else ''}", fontsize=8)
-        axs[idx].set_ylabel(f"{paras2string[par2]}{' (' + unit2 + ')' if len(unit2) > 0 else ''}", fontsize=8)
-        axs[idx].tick_params(labelrotation=45, labelsize=5)
-        tx = axs[idx].xaxis.get_offset_text()
-        tx.set_x(1.1)
-        tx.set_fontsize(5)
-        '''
-        tx.set_visible(False)
-        axs[r,c].text(1.05, -0.05, str(tx), fontsize=5,transform=axs[r,c].transAxes)
-        '''
-        ty = axs[idx].yaxis.get_offset_text()
-        ty.set_x(-0.1)
-        ty.set_fontsize(5)
+        name1, name2 = paras2string[par1], paras2string[par2]
+        
+        if stratified:
 
-        if r + c == 0: # only need one legend
-            axs[idx].legend(bbox_to_anchor=(0.62, 1.02), loc="lower right", frameon=False,
+            lb, ub = getBounds(svar, ipt_rg)
+            int_width = (ub - lb)/N_STRA
+            lb_sub, ub_sub = lb, lb + int_width
+            for i in range(N_STRA):  
+                sub_para_samples = para_samples[ (para_samples[svar] >= lb_sub) & (para_samples[svar] < ub_sub) ]
+                idx = indexFormatter(r, c, nrow, ncol)
+
+                if i != N_STRA - 1:
+                    addScatterPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, res, sub_para_samples, xlabel=False, xtick=False)
+                else:
+                    addScatterPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, res, sub_para_samples)
+
+                if c == ncol - 1:
+                    '''axs[idx].set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', rotation=-90, position=(1, 0.5), fontsize=8)'''
+                    axs[idx].set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', loc='right', fontsize=8)
+
+                r += 1
+                lb_sub += int_width
+                ub_sub += int_width
+
+        else:
+            idx = indexFormatter(r, c, nrow, ncol)
+            addScatterPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, res, para_samples)
+
+        if legend: # only need one legend
+            idx = indexFormatter(0, 0, nrow, ncol)
+            coord = (0.32, 1) if ncol > 1 else (0.22, 1.08)
+            axs[idx].legend(bbox_to_anchor=coord, loc="lower left", frameon=False,
                  mode='expand', borderaxespad=0, ncol=2, prop = {'size':8})
 
-    fig.suptitle(f'success rate = {success_rate} %', y=0.95)
+    fig.suptitle(f'success rate = {success_rate} %', y=0.98)
     fig.tight_layout()
     fig.savefig(opt)
 

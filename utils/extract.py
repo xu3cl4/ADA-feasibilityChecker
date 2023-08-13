@@ -1,5 +1,23 @@
 # import from the built-in modules 
-from os import SEEK_END, SEEK_CUR
+from os   import SEEK_END, SEEK_CUR
+from yaml import safe_load as load
+
+def getBounds(var, fname_yaml):
+
+    with open(fname_yaml, 'r') as f:
+        params_ranges = load(f)
+        
+        if var in params_ranges['amanzi']:
+            lb, ub = params_ranges['amanzi'][var]['low'], params_ranges['amanzi'][var]['up']
+            return (lb, ub)
+        
+        if var in params_ranges['pflo']:
+            lb, ub = params_ranges['amanzi'][var]['low'], params_ranges['amanzi'][var]['up']
+            return (lb, ub)
+
+        print(f'The bounds for {var} is not found')
+        return 
+
 
 def listNlines(fname, n = 1):
     '''implementation source: https://stackoverflow.com/questions/46258499/how-to-read-the-last-line-of-a-file-in-python''' 
