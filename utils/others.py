@@ -6,3 +6,10 @@ def checkFeasibility(last2lines):
             return "infeasible"
         else:
             return "other"
+
+def getSuccessRate(n_success, n_failure, n_other=0):
+   return round(100*n_success/(n_success + n_failure + n_other), 2) 
+
+def getIndices(i, ncol):
+    r, c = i//ncol, i%ncol
+    return (r, c)
