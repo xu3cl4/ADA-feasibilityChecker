@@ -9,7 +9,7 @@ import pandas            as pd
 
 # import from personal modules 
 from utils.extract import listNlines, getBounds
-from utils.plot    import addScatterPlot
+from utils.plot    import addBinPlot
 from utils.others  import checkFeasibility, getIndices, getSuccessRate, indexFormatter
 
 # constants 
@@ -42,13 +42,14 @@ def getArguments():
     parser = ArgumentParser(formatter_class=RT)
     parser.add_argument('ipt_sim',  type = str, help="the directory including the .out files from AMANZI")
     parser.add_argument('ipt_para', type = str, help="the path to the file storing the parameters that AMANZI uses")
+    parser.add_argument('ipt_rg', type = str, help="the path to the file storing the range of the parameters")
     parser.add_argument('opt',      type = str, help="the directory to store the 'feasibility' plot")
     parser.add_argument('--paras',  type = str, help='''the list of parameters of interest, including\nperm, poro, alpha, m, sr, rech, dump, ph, tritium, al, uran''',          
             nargs='*', default=["perm", "rech", "dump"])
     parser.add_argument('--svar',   type = str, help="the parameter to be stratified over", default="")
-    parser.add_argument('--ipt_rg', type = str, help="the path to the file storing the range of the parameter to be stratified over")
     parser.add_argument('--n_row',  type = int, help="number of plots per row", default=1000)
-    parser.add_argument('--n_stra', type = int, help="number of equal intervals that the stratified parameter would be divide into\n\n", default=3)
+    parser.add_argument('--n_stra', type = int, help="number of equal intervals that the stratified parameter would be divide into", default=3)
+    parser.add_argument('--n_bin',  type = int, help="number of bins for each parameter\n\n", default=5)
 
     return parser.parse_args()
 
@@ -61,10 +62,11 @@ def main():
     paras    = [string2paras[para] for para in args.paras]
     svar     = string2paras[args.svar] if len(args.svar) > 0 else None 
     N_STRA   = args.n_stra
+    N_BIN    = args.n_bin
     
     stratified = False if svar is None else True
-    ipt_rg   = DIR.joinpath(args.ipt_rg) if stratified else None
-    fname_out= f"{ipt_para.stem}_feasibility.pdf" if not stratified else f"{ipt_para.stem}_feasibility_stratify{args.svar}_{N_STRA}.pdf"
+    ipt_rg   = DIR.joinpath(args.ipt_rg)
+    fname_out= f"{ipt_para.stem}_feasibilityBinning.pdf" if not stratified else f"{ipt_para.stem}_feasibilityBinning_stratify{args.svar}_{N_STRA}.pdf"
     opt      = DIR.joinpath(args.opt).joinpath(fname_out)
 
     # get the indices for feasible/infeasible sets of parameters
@@ -91,15 +93,26 @@ def main():
     success_rate = getSuccessRate( len(res['feasible']), len(res['infeasible']), len(res['other']) )
     print(f"simulation success rate: {success_rate} %")
     
-
     # read the parameters used in simulations 
     para_samples = pd.read_csv(ipt_para)
-
+    
     # encode feasibility 
     para_samples['feasible'] = 0
     print(para_samples.index)
     para_samples.loc[res['feasible'], ['feasible']] = 1
     para_samples.drop(index=res['other'], inplace=True)
+
+    # binning 
+    for para in paras:
+        lb, ub = getBounds(para, ipt_rg)
+        int_width = (ub - lb)/N_BIN
+        bins = [lb]
+        labels = [] 
+        for i in range(1, N_BIN + 1):
+            bins.append(lb + i*int_width)
+            labels.append( (bins[i] + bins[i-1])/2 )
+        para_samples[f'{para}_bin'] = pd.cut(para_samples[para], bins=bins, labels=labels)
+
 
     # plotting  
     pairs = list(comb(paras, 2))
@@ -134,9 +147,9 @@ def main():
                 idx = indexFormatter(r, c, nrow, ncol)
 
                 if i != N_STRA - 1:
-                    addScatterPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, res, sub_para_samples, xlabel=False, xtick=False)
+                    addBinPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, sub_para_samples, fig, xlabel=False, xtick=False)
                 else:
-                    addScatterPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, res, sub_para_samples)
+                    addBinPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, sub_para_samples, fig)
 
                 if c == ncol - 1:
                     '''axs[idx].set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', rotation=-90, position=(1, 0.5), fontsize=8)'''
@@ -148,7 +161,7 @@ def main():
 
         else:
             idx = indexFormatter(r, c, nrow, ncol)
-            addScatterPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, res, para_samples)
+            addBinPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, para_samples, fig)
 
         if legend: # only need one legend
             idx = indexFormatter(0, 0, nrow, ncol)
