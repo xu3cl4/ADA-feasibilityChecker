@@ -4,11 +4,16 @@ string2paras = { "perm": "@k_u@", "poro": "@phi_u@", "alpha": "@alph_u@", "m": "
         }
 
 paras2string = {
-        
+        "@k_u@": "permeability", "@phi_u@": "porosity", "@alph_u@": "alpha", "@m_u@": "m", "@sr@": "sr",  
+        "@r_hist@": "recharge rate", "@r_mid@": "dumping rate", 
+            "@ph_seepage@", "@tri_conc_seepage@", "@al_conc_seepage@", "@uran_conc_seepage@"
+
         }
 
 units = {
-        
+            "@k_u@", "@phi_u@", "@alph_u@", "@m_u@", "@sr@",
+            "@r_hist@", "@r_mid@",
+            "@ph_seepage@", "@tri_conc_seepage@", "@al_conc_seepage@", "@uran_conc_seepage@"
         }
 
 
