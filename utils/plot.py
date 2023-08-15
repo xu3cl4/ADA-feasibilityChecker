@@ -1,3 +1,8 @@
+string2paras = { "perm": "@k_u@", "poro": "@phi_u@", "alpha": "@alph_u@", "m": "@m_u@",
+        "sr": "@sr@", "rech": "@r_hist@", "dump": "@r_mid@",
+        "ph": "@ph_seepage@", "tritium": "@tri_conc_seepage@", "al": "@al_conc_seepage@", "uran": "@uran_conc_seepage@"
+        }
+
 paras2string = {
         
         }
@@ -64,7 +69,6 @@ def addBinPlot(ax, para_samples, par1, par2, fig, xlabel=True, ylabel=True, xtic
         Given the axis of a subplot, the function helps adding a scatter plot onto it. 
 
         ax:   the axe of a plot 
-        idx:   the index of subplot on which we would like to add a bin scatter plot 
         par1:  the first parameter 
         par2:  the second parameter 
         
@@ -84,11 +88,9 @@ def addScatterPlot(ax, para_samples, par1, par2, xlabel=True, ylabel=True, xtick
         Given the axis of a subplot, the function helps adding a scatter plot onto it. 
 
         ax:   the axe of a plot 
-        idx:   the index of subplot on which we would like to add a scatter plot 
         par1:  the first parameter 
         par2:  the second parameter 
         
-        FSB_res: a dictionary storing the indices for feasible, infeasible and other simulations 
         para_samples: a pandas dataframe of which each row is a parameter sample used in the simulations
     '''
    
@@ -106,19 +108,22 @@ def add3DScatterPlot(ax, para_samples, par1, par2, par3, xlabel=True, ylabel=Tru
         Given the axis of a subplot, the function helps adding a scatter plot onto it. 
 
         ax:   the axe of a plot 
-        idx:   the index of subplot on which we would like to add a scatter plot 
-        par1:  the first parameter 
-        par2:  the second parameter 
+        par1: the first parameter 
+        par2: the second parameter 
+        par3: the third parameter
         
-        FSB_res: a dictionary storing the indices for feasible, infeasible and other simulations 
         para_samples: a pandas dataframe of which each row is a parameter sample used in the simulations
     '''
    
     feas = para_samples[(para_samples['feasible'] == 1)]
     infeas = para_samples[(para_samples['feasible'] == 0)]
-    ax.scatter(feas[par1], feas[par2], color='green', label="success", zorder=1, s=1)
-    ax.scatter(infeas[par1], infeas[par2], color='red', label="failures", zorder=2, s=1)
+    ax.scatter(feas[par1], feas[par2], feas[par3], color='green', label="success", zorder=1, s=1)
+    ax.scatter(infeas[par1], infeas[par2], infeas[par3], color='red', label="failures", zorder=2, s=1)
 
-    modifylabels(ax, par1, par2, xlabel, ylabel)
-    modifyticks(ax, par1, par2, xtick, ytick)
+    for i in range(infeas.shape[0]):
+        idx = infeas.index[i]
+        ax.text(infeas.loc[idx, par1], infeas.loc[idx, par2], infeas.loc[idx, par3], f'{idx}', zorder=5, s=5)
+
+    modifylabels(ax, par1, par2, par3, xlabel, ylabel, zlabel)
+    modifyticks(ax, par1, par2, xtick, ytick, ztick)
     return 
