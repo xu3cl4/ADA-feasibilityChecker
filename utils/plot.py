@@ -73,7 +73,7 @@ def addBinPlot(ax, para_samples, par1, par2, fig, xlabel=True, ylabel=True, xtic
     '''
         Given the axis of a subplot, the function helps adding a scatter plot onto it. 
 
-        ax:   the axe of a plot 
+        ax:   the axis of a plot 
         par1:  the first parameter 
         par2:  the second parameter 
         
@@ -92,7 +92,7 @@ def addScatterPlot(ax, para_samples, par1, par2, xlabel=True, ylabel=True, xtick
     '''
         Given the axis of a subplot, the function helps adding a scatter plot onto it. 
 
-        ax:   the axe of a plot 
+        ax:   the axis of a plot 
         par1:  the first parameter 
         par2:  the second parameter 
         
@@ -112,7 +112,7 @@ def add3DScatterPlot(ax, para_samples, par1, par2, par3, xlabel=True, ylabel=Tru
     '''
         Given the axis of a subplot, the function helps adding a scatter plot onto it. 
 
-        ax:   the axe of a plot 
+        ax:   the axis of a plot 
         par1: the first parameter 
         par2: the second parameter 
         par3: the third parameter
