@@ -1,8 +1,3 @@
-string2paras = { "perm": "@k_u@", "poro": "@phi_u@", "alpha": "@alph_u@", "m": "@m_u@",
-        "sr": "@sr@", "rech": "@r_hist@", "dump": "@r_mid@",
-        "ph": "@ph_seepage@", "tritium": "@tri_conc_seepage@", "al": "@al_conc_seepage@", "uran": "@uran_conc_seepage@"
-        }
-
 paras2string = {
         "@k_u@": "permeability", "@phi_u@": "porosity", "@alph_u@": "alpha", "@m_u@": "m", "@sr@": "sr",  
         "@r_hist@": "recharge rate", "@r_mid@": "dumping rate", 
