@@ -6,14 +6,14 @@ string2paras = { "perm": "@k_u@", "poro": "@phi_u@", "alpha": "@alph_u@", "m": "
 paras2string = {
         "@k_u@": "permeability", "@phi_u@": "porosity", "@alph_u@": "alpha", "@m_u@": "m", "@sr@": "sr",  
         "@r_hist@": "recharge rate", "@r_mid@": "dumping rate", 
-            "@ph_seepage@", "@tri_conc_seepage@", "@al_conc_seepage@", "@uran_conc_seepage@"
+        "@ph_seepage@": "ph", "@tri_conc_seepage@": "tritium conc", "@al_conc_seepage@": "Al+++ conc", "@uran_conc_seepage@": "uranium conc"
 
         }
 
 units = {
-            "@k_u@", "@phi_u@", "@alph_u@", "@m_u@", "@sr@",
-            "@r_hist@", "@r_mid@",
-            "@ph_seepage@", "@tri_conc_seepage@", "@al_conc_seepage@", "@uran_conc_seepage@"
+        "@k_u@": "m^2", "@phi_u@": "", "@alph_u@": "m s^2/kg-water", "@m_u@": "", "@sr@": "",
+        "@r_hist@": "mm/s", "@r_mid@": "mm/s",
+        "@ph_seepage@":"", "@tri_conc_seepage@": "mol/kg-water", "@al_conc_seepage@": "mol/kg-water", "@uran_conc_seepage@": "mol/kg-water"
         }
 
 
