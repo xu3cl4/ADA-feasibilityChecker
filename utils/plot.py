@@ -1,3 +1,5 @@
+import pandas as pd
+
 paras2string = {
         "@k_u@": "permeability", "@phi_u@": "porosity", "@alph_u@": "alpha", "@m_u@": "m", "@sr@": "sr",  
         "@r_hist@": "recharge rate", "@r_mid@": "dumping rate", 
@@ -28,7 +30,7 @@ def modifylabels(ax, par1, par2, par3=None, xlabel=True, ylabel=True, zlabel=Fal
 
     if zlabel:
         unit3, name3 = units[par3], paras2string[par3]
-        ax.set_zlabel(f"{name2}{' (' + unit2 + ')' if len(unit2) > 0 else ''}", fontsize=8)
+        ax.set_zlabel(f"{name3}{' (' + unit3 + ')' if len(unit3) > 0 else ''}", fontsize=8)
     else:
         ax.set_zlabel(None)
     return 
@@ -99,6 +101,13 @@ def addScatterPlot(ax, para_samples, par1, par2, xlabel=True, ylabel=True, xtick
     ax.scatter(feas[par1], feas[par2], color='green', label="success", zorder=1, s=1)
     ax.scatter(infeas[par1], infeas[par2], color='red', label="failures", zorder=2, s=1)
 
+    with pd.option_context('display.precision', 3):
+        print(infeas[[par1, par2]].to_string())
+
+    for i in range(infeas.shape[0]):
+        idx = infeas.index[i]
+        ax.text(infeas.loc[idx, par1], infeas.loc[idx, par2], f'{idx}', zorder=5, size=5, color='k')
+
     modifylabels(ax, par1, par2, xlabel, ylabel)
     modifyticks(ax, xtick, ytick)
     return 
@@ -119,6 +128,9 @@ def add3DScatterPlot(ax, para_samples, par1, par2, par3, xlabel=True, ylabel=Tru
     infeas = para_samples[(para_samples['feasible'] == 0)]
     ax.scatter(feas[par1], feas[par2], feas[par3], color='green', label="success", zorder=1, s=1)
     ax.scatter(infeas[par1], infeas[par2], infeas[par3], color='red', label="failures", zorder=2, s=1)
+
+    with pd.option_context('display.precision', 3):
+        print(infeas[[par1, par2, par3]].to_string())
 
     for i in range(infeas.shape[0]):
         idx = infeas.index[i]
