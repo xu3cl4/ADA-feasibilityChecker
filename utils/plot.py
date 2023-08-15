@@ -91,10 +91,34 @@ def addScatterPlot(ax, para_samples, par1, par2, xlabel=True, ylabel=True, xtick
         FSB_res: a dictionary storing the indices for feasible, infeasible and other simulations 
         para_samples: a pandas dataframe of which each row is a parameter sample used in the simulations
     '''
-    
-    ax.scatter(para_samples[(para_samples['feasible'] == 1), [par1]], para_samples[(para_samples['feasible'] == 1), [par2]], color='green', label="success", zorder=1, s=1)
-    ax.scatter(para_samples[(para_samples['feasible'] == 0), [par1]], para_samples[(para_samples['feasible'] == 0), [par2]], color='red', label="failures", zorder=2, s=1)
+   
+    feas = para_samples[(para_samples['feasible'] == 1)]
+    infeas = para_samples[(para_samples['feasible'] == 0)]
+    ax.scatter(feas[par1], feas[par2], color='green', label="success", zorder=1, s=1)
+    ax.scatter(infeas[par1], infeas[par2], color='red', label="failures", zorder=2, s=1)
 
-    modifylabels(axs, idx, unit1, unit2, name1, name2, xlabel, ylabel)
-    modifyticks(axs, idx, unit1, unit2, name1, name2, xtick, ytick)
+    modifylabels(ax, par1, par2, xlabel, ylabel)
+    modifyticks(ax, par1, par2, xtick, ytick)
+    return 
+
+def add3DScatterPlot(ax, para_samples, par1, par2, par3, xlabel=True, ylabel=True, zlabel=True, xtick=True, ytick=True, ztick=True):
+    '''
+        Given the axis of a subplot, the function helps adding a scatter plot onto it. 
+
+        ax:   the axe of a plot 
+        idx:   the index of subplot on which we would like to add a scatter plot 
+        par1:  the first parameter 
+        par2:  the second parameter 
+        
+        FSB_res: a dictionary storing the indices for feasible, infeasible and other simulations 
+        para_samples: a pandas dataframe of which each row is a parameter sample used in the simulations
+    '''
+   
+    feas = para_samples[(para_samples['feasible'] == 1)]
+    infeas = para_samples[(para_samples['feasible'] == 0)]
+    ax.scatter(feas[par1], feas[par2], color='green', label="success", zorder=1, s=1)
+    ax.scatter(infeas[par1], infeas[par2], color='red', label="failures", zorder=2, s=1)
+
+    modifylabels(ax, par1, par2, xlabel, ylabel)
+    modifyticks(ax, par1, par2, xtick, ytick)
     return 
