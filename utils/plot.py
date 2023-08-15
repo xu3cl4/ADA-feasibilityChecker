@@ -85,7 +85,7 @@ def addBinPlot(ax, para_samples, par1, par2, fig, xlabel=True, ylabel=True, xtic
     if colorbar: fig.colorbar(pcm, ax=ax)
 
     modifylabels(ax, par1, par2, xlabel, ylabel)
-    modifyticks(ax, par1, par2, xtick, ytick)
+    modifyticks(ax, xtick, ytick)
     return 
 
 def addScatterPlot(ax, para_samples, par1, par2, xlabel=True, ylabel=True, xtick=True, ytick=True):
@@ -105,7 +105,7 @@ def addScatterPlot(ax, para_samples, par1, par2, xlabel=True, ylabel=True, xtick
     ax.scatter(infeas[par1], infeas[par2], color='red', label="failures", zorder=2, s=1)
 
     modifylabels(ax, par1, par2, xlabel, ylabel)
-    modifyticks(ax, par1, par2, xtick, ytick)
+    modifyticks(ax, xtick, ytick)
     return 
 
 def add3DScatterPlot(ax, para_samples, par1, par2, par3, xlabel=True, ylabel=True, zlabel=True, xtick=True, ytick=True, ztick=True):
@@ -127,8 +127,8 @@ def add3DScatterPlot(ax, para_samples, par1, par2, par3, xlabel=True, ylabel=Tru
 
     for i in range(infeas.shape[0]):
         idx = infeas.index[i]
-        ax.text(infeas.loc[idx, par1], infeas.loc[idx, par2], infeas.loc[idx, par3], f'{idx}', zorder=5, s=5)
+        ax.text(infeas.loc[idx, par1], infeas.loc[idx, par2], infeas.loc[idx, par3], f'{idx}', zorder=5, size=5, color='k')
 
     modifylabels(ax, par1, par2, par3, xlabel, ylabel, zlabel)
-    modifyticks(ax, par1, par2, xtick, ytick, ztick)
+    modifyticks(ax, xtick, ytick, ztick)
     return 
