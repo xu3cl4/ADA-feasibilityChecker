@@ -9,8 +9,8 @@ import pandas            as pd
 
 # import from personal modules 
 from utils.extract import listNlines, getBounds
-from utils.plot    import addBinPlot
-from utils.others  import checkFeasibility, getIndices, getSuccessRate, indexFormatter
+from utils.plot    import addBinPlot, paras2string
+from utils.others  import checkFeasibility, getIndices, getSuccessRate
 
 # constants 
 FPATH = Path(__file__)
@@ -19,16 +19,6 @@ DIR = FPATH.parent
 string2paras = { "perm": "@k_u@", "poro": "@phi_u@", "alpha": "@alph_u@", "m": "@m_u@", 
         "sr": "@sr@", "rech": "@r_hist@", "dump": "@r_mid@",
         "ph": "@ph_seepage@", "tritium": "@tri_conc_seepage@", "al": "@al_conc_seepage@", "uran": "@uran_conc_seepage@" 
-        }
-
-paras2string = { "@k_u@": "permeability", "@phi_u@": "porosity", "@alph_u@": "alpha", "@m_u@": "m", 
-        "@sr@": "sr", "@r_hist@": "recharge rate", "@r_mid@": "dumping rate",
-        "@ph_seepage@": "pH", "@tri_conc_seepage@": "Tritium conc", "@al_conc_seepage@": "Al+++ conc", "@uran_conc_seepage@": "Urianium conc"
-        }
-
-units = { "@k_u@": "m^2", "@phi_u@": "poro", "@alph_u@": "", "@m_u@": "",
-        "@sr@": "", "@r_hist@": "mm/s", "@r_mid@": "mm/s",
-        "@ph_seepage@": "mol/kg-water", "@tri_conc_seepage@": "mol/kg-water", "@al_conc_seepage@": "mol/kg-water", "@uran_conc_seepage@": "mol/kg-water"
         }
 
 def getArguments():
@@ -127,15 +117,13 @@ def main():
         idx_f = N_STRA
         nrow *= N_STRA
 
-    fig, axs = plt.subplots(nrow, ncol, figsize=(3.3*ncol + 1, 3.3*nrow))
+    fig, axs = plt.subplots(nrow, ncol, figsize=(3.3*ncol + 1, 3.3*nrow), squeeze=False)
    
     for i, pair in enumerate(pairs):
         r, c = getIndices(i, ncol, idx_f)
-        legend = True if r + c == 0 else False
+        idx = [r, c]
 
         par1, par2 = pair
-        unit1, unit2 = units[par1], units[par2]
-        name1, name2 = paras2string[par1], paras2string[par2]
         
         if stratified:
 
@@ -144,29 +132,26 @@ def main():
             lb_sub, ub_sub = lb, lb + int_width
             for i in range(N_STRA):  
                 sub_para_samples = para_samples[ (para_samples[svar] >= lb_sub) & (para_samples[svar] < ub_sub) ]
-                idx = indexFormatter(r, c, nrow, ncol)
 
                 if i != N_STRA - 1:
-                    addBinPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, sub_para_samples, fig, xlabel=False, xtick=False)
+                    addBinPlot(axs[tuple(idx)], sub_para_samples, par1, par2, fig, xlabel=False, xtick=False)
                 else:
-                    addBinPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, sub_para_samples, fig)
+                    addBinPlot(axs[tuple(idx)], sub_para_samples, par1, par2, fig)
 
                 if c == ncol - 1:
                     '''axs[idx].set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', rotation=-90, position=(1, 0.5), fontsize=8)'''
-                    axs[idx].set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', loc='right', fontsize=8)
+                    axs[tuple(idx)].set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', loc='right', fontsize=8)
 
-                r += 1
+                idx[0] += 1
                 lb_sub += int_width
                 ub_sub += int_width
 
         else:
-            idx = indexFormatter(r, c, nrow, ncol)
-            addBinPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, para_samples, fig)
+            addBinPlot(axs[tuple(idx)], para_samples, par1, par2, fig)
 
-        if legend: # only need one legend
-            idx = indexFormatter(0, 0, nrow, ncol)
+        if r + c == 0: # only need one legend
             coord = (0.32, 1) if ncol > 1 else (0.22, 1.08)
-            axs[idx].legend(bbox_to_anchor=coord, loc="lower left", frameon=False,
+            axs[(0, 0)].legend(bbox_to_anchor=coord, loc="lower left", frameon=False,
                  mode='expand', borderaxespad=0, ncol=2, prop = {'size':8})
 
     fig.suptitle(f'success rate = {success_rate} %', y=0.98)

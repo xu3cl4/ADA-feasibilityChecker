@@ -1,18 +1,19 @@
-def modifylabels(axs, idx, unit1, unit2, name1, name2, xlabel=True, ylabel=True):
+def modifylabels(ax, unit1, unit2, name1, name2, xlabel=True, ylabel=True, zlabel=True):
+
     if xlabel:
-        axs[idx].set_xlabel(f"{name1}{' (' + unit1 + ')' if len(unit1) > 0 else ''}", fontsize=8)
+        ax.set_xlabel(f"{name1}{' (' + unit1 + ')' if len(unit1) > 0 else ''}", fontsize=8)
     else: 
-        axs[idx].set_xlabel(None) 
+        ax.set_xlabel(None) 
 
     if ylabel:
-        axs[idx].set_ylabel(f"{name2}{' (' + unit2 + ')' if len(unit2) > 0 else ''}", fontsize=8)
+        ax.set_ylabel(f"{name2}{' (' + unit2 + ')' if len(unit2) > 0 else ''}", fontsize=8)
     else:
-        axs[idx].set_ylable(None)
+        ax.set_ylable(None)
     return 
 
-def modifyticks(axs, idx, unit1, unit2, name1, name2, xtick=True, ytick=True):
+def modifyticks(ax, unit1, unit2, name1, name2, xtick=True, ytick=True, ztick=True):
     if xtick:
-        axs[idx].tick_params(axis='x', labelsize=5, labelrotation = 45)
+        ax.tick_params(axis='x', labelsize=5, labelrotation = 45)
         tx = axs[idx].xaxis.get_offset_text()
         tx.set_x(1.1)
         tx.set_fontsize(5)
@@ -80,4 +81,3 @@ def addScatterPlot(axs, idx, par1, par2, unit1, unit2, name1, name2, para_sample
     modifylabels(axs, idx, unit1, unit2, name1, name2, xlabel, ylabel)
     modifyticks(axs, idx, unit1, unit2, name1, name2, xtick, ytick)
     return 
-

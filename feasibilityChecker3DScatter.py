@@ -6,10 +6,11 @@ from re        import search
 
 import matplotlib.pyplot as plt
 import pandas            as pd
+import sys 
 
 # import from personal modules 
 from utils.extract import listNlines, getBounds
-from utils.plot    import addScatterPlot, paras2string
+from utils.plot    import add3DScatterPlot, paras2string
 from utils.others  import checkFeasibility, getIndices, getSuccessRate
 
 # constants 
@@ -49,12 +50,14 @@ def main():
     ipt_sim  = DIR.joinpath(args.ipt_sim)
     ipt_para = DIR.joinpath(args.ipt_para)
     paras    = [string2paras[para] for para in args.paras]
+    if len(paras) < 3: sys.exit('3 or more parameters need to be specified.')
+
     svar     = string2paras[args.svar] if len(args.svar) > 0 else None 
     N_STRA   = args.n_stra
-    
     stratified = False if svar is None else True
+
     ipt_rg   = DIR.joinpath(args.ipt_rg) if stratified else None
-    fname_out= f"{ipt_para.stem}_feasibility.pdf" if not stratified else f"{ipt_para.stem}_feasibility_stratify{args.svar}_{N_STRA}.pdf"
+    fname_out= f"{ipt_para.stem}_feasibility3D.pdf" if not stratified else f"{ipt_para.stem}_feasibility3D_stratify{args.svar}_{N_STRA}.pdf"
     opt      = DIR.joinpath(args.opt).joinpath(fname_out)
 
     # get the indices for feasible/infeasible sets of parameters
@@ -80,7 +83,6 @@ def main():
 
     success_rate = getSuccessRate( len(res['feasible']), len(res['infeasible']), len(res['other']) )
     print(f"simulation success rate: {success_rate} %")
-    
 
     # read the parameters used in simulations 
     para_samples = pd.read_csv(ipt_para)
@@ -91,11 +93,11 @@ def main():
     para_samples.drop(index=res['other'], inplace=True)
 
     # plotting  
-    pairs = list(comb(paras, 2))
-    N_PLOTS_PER_ROW = min(len(pairs), args.n_row)
+    groups = list(comb(paras, 3))
+    N_PLOTS_PER_ROW = min(len(groups), args.n_row)
 
-    nrow, ncol = len(pairs)//N_PLOTS_PER_ROW, N_PLOTS_PER_ROW
-    if len(pairs) % N_PLOTS_PER_ROW != 0: nrow += 1
+    nrow, ncol = len(groups)//N_PLOTS_PER_ROW, N_PLOTS_PER_ROW
+    if len(groups) % N_PLOTS_PER_ROW != 0: nrow += 1
     idx_f = 1
 
     # create more rows for stratifying 
@@ -103,13 +105,13 @@ def main():
         idx_f = N_STRA
         nrow *= N_STRA
 
-    fig, axs = plt.subplots(nrow, ncol, figsize=(3.3*ncol + 1, 3.3*nrow), squeeze=False)
+    fig, axs = plt.subplots(nrow, ncol, figsize=(5*ncol + 1, 5*nrow), squeeze=False, subplot_kw=dict(projection='3d'))
    
-    for i, pair in enumerate(pairs):
+    for i, group in enumerate(groups):
         r, c = getIndices(i, ncol, idx_f)
         idx = [r, c]
 
-        par1, par2 = pair
+        par1, par2, par3 = group
         
         if stratified:
 
@@ -119,10 +121,7 @@ def main():
             for i in range(N_STRA):  
                 sub_para_samples = para_samples[ (para_samples[svar] >= lb_sub) & (para_samples[svar] < ub_sub) ]
 
-                if i != N_STRA - 1:
-                    addScatterPlot(axs[tuple(idx)], sub_para_samples, par1, par2, xlabel=False, xtick=False)
-                else:
-                    addScatterPlot(axs[tuple(idx)], sub_para_samples, par1, par2)
+                add3DScatterPlot(axs[tuple(idx)], sub_para_samples, par1, par2, par3, fig)
 
                 if c == ncol - 1:
                     '''axs[idx].set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', rotation=-90, position=(1, 0.5), fontsize=8)'''
@@ -133,14 +132,14 @@ def main():
                 ub_sub += int_width
 
         else:
-            addScatterPlot(axs[tuple(idx)], para_samples, par1, par2)
+            add3DScatterPlot(axs[tuple(idx)], para_samples, par1, par2, par3, fig)
 
-        if legend: # only need one legend
-            coord = (0.32, 1) if ncol > 1 else (0.22, 1.08)
+        if r + c == 0: # only need one legend
+            coord = (0.32, 1) if ncol > 1 else (0.22, 1)
             axs[(0,0)].legend(bbox_to_anchor=coord, loc="lower left", frameon=False,
                  mode='expand', borderaxespad=0, ncol=2, prop = {'size':8})
 
-    fig.suptitle(f'success rate = {success_rate} %', y=0.98)
+    fig.suptitle(f'success rate = {success_rate} %', y=0.99)
     fig.tight_layout()
     fig.savefig(opt)
 
