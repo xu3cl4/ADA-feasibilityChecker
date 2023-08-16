@@ -135,3 +135,33 @@ def add3DScatterPlot(ax, para_samples, par1, par2, par3, xlabel=True, ylabel=Tru
     modifylabels(ax, par1, par2, par3, xlabel, ylabel, zlabel)
     modifyticks(ax, xtick, ytick, ztick)
     return 
+
+def add3DSurfacePlot(ax, para_samples, par1, par2, par3, xlabel=True, ylabel=True, zlabel=True, xtick=True, ytick=True, ztick=True):
+    '''
+        Given the axis of a subplot, the function helps adding a scatter plot onto it. 
+
+        ax:   the axis of a plot 
+        par1: the first parameter 
+        par2: the second parameter 
+        par3: the third parameter
+        
+        para_samples: a pandas dataframe of which each row is a parameter sample used in the simulations
+    '''
+   
+    feas = para_samples[(para_samples['feasible'] == 1)]
+    infeas = para_samples[(para_samples['feasible'] == 0)]
+    surf_feas = ax.plot_trisurf(feas[par1], feas[par2], feas[par3], color='green', label="success", alpha=0.5, shade=False)
+    surf_infeas = ax.plot_trisurf(infeas[par1], infeas[par2], infeas[par3], color='red', label="failures", alpha=0.3, shade=False)
+    
+    surf_feas._facecolors2d = surf_feas._facecolor3d
+    surf_feas._edgecolors2d = surf_feas._edgecolor3d
+    
+    surf_infeas._facecolors2d = surf_infeas._facecolor3d
+    surf_infeas._edgecolors2d = surf_infeas._edgecolor3d
+
+    with pd.option_context('display.precision', 3):
+        print(infeas[[par1, par2, par3]].to_string())
+
+    modifylabels(ax, par1, par2, par3, xlabel, ylabel, zlabel)
+    modifyticks(ax, xtick, ytick, ztick)
+    return 
