@@ -76,7 +76,7 @@ def main():
         res[cat].append(idx)
 
     if len(res['other']) != 0:
-        print(f'Detect unexpected endings from simulations: {[i + 1 for i in other]}')
+        print(f"Detect unexpected endings from simulations: {[i + 1 for i in res['other']]}")
 
     success_rate = getSuccessRate( len(res['feasible']), len(res['infeasible']), len(res['other']) )
     print(f"simulation success rate: {success_rate} %")
@@ -135,7 +135,7 @@ def main():
         else:
             addScatterPlot(axs[tuple(idx)], para_samples, par1, par2)
 
-        if legend: # only need one legend
+        if r + c == 0: # only need one legend
             coord = (0.32, 1) if ncol > 1 else (0.22, 1.08)
             axs[(0,0)].legend(bbox_to_anchor=coord, loc="lower left", frameon=False,
                  mode='expand', borderaxespad=0, ncol=2, prop = {'size':8})

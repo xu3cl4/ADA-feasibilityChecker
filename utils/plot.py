@@ -31,8 +31,6 @@ def modifylabels(ax, par1, par2, par3=None, xlabel=True, ylabel=True, zlabel=Fal
     if zlabel:
         unit3, name3 = units[par3], paras2string[par3]
         ax.set_zlabel(f"{name3}{' (' + unit3 + ')' if len(unit3) > 0 else ''}", fontsize=8)
-    else:
-        ax.set_zlabel(None)
     return 
 
 def modifyticks(ax, xtick=True, ytick=True, ztick=False):
@@ -62,8 +60,6 @@ def modifyticks(ax, xtick=True, ytick=True, ztick=False):
         tz = ax.yaxis.get_offset_text()
         tz.set_x(-0.1)
         tz.set_fontsize(5)
-    else:
-        ax.set_zticks([]) 
     return 
 
 def addBinPlot(ax, para_samples, par1, par2, fig, xlabel=True, ylabel=True, xtick=True, ytick=True, colorbar=True):

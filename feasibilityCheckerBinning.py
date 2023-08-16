@@ -78,7 +78,7 @@ def main():
         res[cat].append(idx)
 
     if len(res['other']) != 0:
-        print(f'Detect unexpected endings from simulations: {[i + 1 for i in other]}')
+        print(f"Detect unexpected endings from simulations: {[i + 1 for i in res['other']]}")
 
     success_rate = getSuccessRate( len(res['feasible']), len(res['infeasible']), len(res['other']) )
     print(f"simulation success rate: {success_rate} %")
