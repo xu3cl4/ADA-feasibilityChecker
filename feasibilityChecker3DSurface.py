@@ -122,7 +122,7 @@ def main():
                 sub_para_samples = para_samples[ (para_samples[svar] >= lb_sub) & (para_samples[svar] < ub_sub) ]
                 add3DSurfacePlot(ax, sub_para_samples, par1, par2, par3, fig)
 
-                if i == 0: # only need one legend
+                if idx == 0: # only need one legend
                     coord = (0.32, 1) if ncol > 1 else (0.22, 1)
                     ax.legend(bbox_to_anchor=coord, loc="lower left", frameon=False,
                         mode='expand', borderaxespad=0, ncol=2, prop = {'size':8})
@@ -137,7 +137,7 @@ def main():
         else:
             ax = fig.add_subplot(nrow, ncol, idx + 1, projection='3d') # index starts with 1 
             add3DSurfacePlot(ax, para_samples, par1, par2, par3, fig)
-            if i == 0: # only need one legend
+            if idx == 0: # only need one legend
                 coord = (0.32, 1) if ncol > 1 else (0.22, 1)
                 ax.legend(bbox_to_anchor=coord, loc="lower left", frameon=False,
                     mode='expand', borderaxespad=0, ncol=2, prop = {'size':8})
