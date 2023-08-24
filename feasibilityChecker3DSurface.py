@@ -127,8 +127,7 @@ def main():
                     ax.legend(bbox_to_anchor=coord, loc="lower left", frameon=False,
                         mode='expand', borderaxespad=0, ncol=2, prop = {'size':8})
 
-                if idx + 1 % ncol == 0:
-                    ax.set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', loc='right', fontsize=8)
+                ax.set_title(f'{paras2string[svar]} in [{lb_sub:.2e},{ub_sub:.2e})', loc='right', fontsize=8)
 
                 idx += 1 
                 lb_sub += int_width
